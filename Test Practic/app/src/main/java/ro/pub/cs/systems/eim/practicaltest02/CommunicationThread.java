@@ -2,6 +2,7 @@ package ro.pub.cs.systems.eim.practicaltest02;
 
 import android.util.Log;
 
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -46,46 +47,39 @@ public class CommunicationThread extends Thread {
 
             if (commandName.equals("set alarm")) {
                 serverThread.clientAlarms.put(ip, hourMinute);
+                /* scrii pe socket */
+                printWriter.println(serverThread.clientAlarms);
             }
 
             if (commandName.equals("reset alarm")) {
                 serverThread.clientAlarms.remove(ip);
+                /* scrii pe socket */
+                printWriter.println(serverThread.clientAlarms);
             }
 
+            if (commandName.equals("poll")) {
+                String currentClient = socket.getInetAddress().toString();
 
-            /* scrii pe socket */
-            printWriter.println(serverThread.clientAlarms);
+                if (serverThread.clientAlarms.get(currentClient) == null) {
+                    printWriter.println("none");
+                } else {
 
+                    if (ip.toLowerCase().contains(hourMinute.toLowerCase())) {
+                        printWriter.println("active");
+                    } else {
+                        printWriter.println("inactive");
+                    }
+                }
 
-//            /* http */
-//            HttpClient httpClient = new DefaultHttpClient();
-//
-//            HttpGet httpGet = new HttpGet("http://api.geonames.org/earthquakesJSON?north=44.1&south=-9.9&east=-22.4&west=55.2&username=pdsd");
-//            ResponseHandler<String> responseHandlerGet = new BasicResponseHandler();
-//
-//            String pageSourceCode = httpClient.execute(httpGet, responseHandlerGet);
-//
-//            if (pageSourceCode == null) {
-//                Log.e(Constants.TAG, "[COMMUNICATION THREAD] Error getting the information from the webservice!");
-//                return;
-//            }
-//
-//            JSONObject content = new JSONObject(pageSourceCode);
-//            JSONArray results = content.getJSONArray("earthquakes");
-//
-//            //  printWriter.println(results.getJSONObject(0).toString());
-//
-//            /* luam o cheie */
-//            JSONObject test = results.getJSONObject(0);
-//
-//            printWriter.println(test.getString("datetime"));
+            }
+
 
             /* trimiti */
             printWriter.flush();
 
         } catch (IOException ioException) {
 
-        }  finally {
+        } finally {
             if (socket != null) {
                 try {
                     socket.close();
